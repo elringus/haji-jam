@@ -21,15 +21,15 @@ public class dfGUICamera : MonoBehaviour
 	public void Start()
 	{
 
-		camera.transparencySortMode = TransparencySortMode.Orthographic;
-		camera.useOcclusionCulling = false;
+		GetComponent<Camera>().transparencySortMode = TransparencySortMode.Orthographic;
+		GetComponent<Camera>().useOcclusionCulling = false;
 
 		// Disable built-in OnMouse* messages - http://unity3d.com/unity/whats-new/unity-4.1
 		// The built-in SendMouseEvents() functionality throws errors if you have methods
 		// with the same name but different signature, as is the case with many of this
 		// library's OnMouse* event handling methods. They really should have implemented
 		// silent fail so as not to force developers into this situation.
-		camera.eventMask &= ~camera.cullingMask;
+		GetComponent<Camera>().eventMask &= ~GetComponent<Camera>().cullingMask;
 
 	}
 

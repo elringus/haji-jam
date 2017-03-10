@@ -626,11 +626,11 @@ public abstract class dfControl : MonoBehaviour, IDFControlHost, IComparable<dfC
 
 				if( Application.isPlaying && !this.IsInteractive )
 				{
-					collider.enabled = false;
+					GetComponent<Collider>().enabled = false;
 				}
 				else
 				{
-					collider.enabled = value;
+					GetComponent<Collider>().enabled = value;
 				}
 
 				isVisible = value;
@@ -2701,9 +2701,9 @@ public abstract class dfControl : MonoBehaviour, IDFControlHost, IComparable<dfC
 	public Bounds GetBounds()
 	{
 
-		if( isInteractive && collider != null )
+		if( isInteractive && GetComponent<Collider>() != null )
 		{
-			return collider.bounds;
+			return GetComponent<Collider>().bounds;
 		}
 
 		var corners = GetCorners();
@@ -2989,12 +2989,12 @@ public abstract class dfControl : MonoBehaviour, IDFControlHost, IComparable<dfC
 	protected internal void updateCollider()
 	{
 
-		var myCollider = collider as BoxCollider;
+		var myCollider = GetComponent<Collider>() as BoxCollider;
 		if( myCollider == null )
 		{
 
-			if( collider != null )
-				throw new Exception( "Invalid collider type on control: " + collider.GetType().Name );
+			if( GetComponent<Collider>() != null )
+				throw new Exception( "Invalid collider type on control: " + GetComponent<Collider>().GetType().Name );
 
 			myCollider = this.gameObject.AddComponent<BoxCollider>();
 
@@ -3099,7 +3099,7 @@ public abstract class dfControl : MonoBehaviour, IDFControlHost, IComparable<dfC
 
 		// Add a kinematic rigidbody at runtime to make moving controls and 
 		// updating the collider less expensive (in theory, not conclusive)
-		if( this.isControlInitialized && Application.isPlaying && rigidbody == null )
+		if( this.isControlInitialized && Application.isPlaying && GetComponent<Rigidbody>() == null )
 		{
 
 			// Too many active RigidBody components gives Windows Metro the falling fits
@@ -3109,7 +3109,7 @@ public abstract class dfControl : MonoBehaviour, IDFControlHost, IComparable<dfC
 
 			rigidBody.hideFlags = HideFlags.HideAndDontSave | HideFlags.HideInInspector;
 			rigidBody.isKinematic = true;
-			rigidbody.useGravity = false;
+			GetComponent<Rigidbody>().useGravity = false;
 			rigidBody.detectCollisions = false;
 
 #endif
@@ -3332,7 +3332,7 @@ public abstract class dfControl : MonoBehaviour, IDFControlHost, IComparable<dfC
 		else if( !Application.isPlaying )
 		{
 			// Disable colliders for invisible controls during design time
-			var boxCollider = collider as BoxCollider;
+			var boxCollider = GetComponent<Collider>() as BoxCollider;
 			boxCollider.size = Vector3.zero;
 		}
 
@@ -3510,7 +3510,7 @@ public abstract class dfControl : MonoBehaviour, IDFControlHost, IComparable<dfC
 	public virtual void OnDrawGizmos()
 	{
 
-		var controlCollider = this.collider as BoxCollider;
+		var controlCollider = this.GetComponent<Collider>() as BoxCollider;
 		if( controlCollider == null )
 			return;
 
@@ -3620,7 +3620,7 @@ public abstract class dfControl : MonoBehaviour, IDFControlHost, IComparable<dfC
 		// in certain situations. Because of this, a new BoxCollider 
 		// component will be added "on demand" if one does not already
 		// exist on the GameObject.
-		if( this.collider == null )
+		if( this.GetComponent<Collider>() == null )
 		{
 			gameObject.AddComponent<BoxCollider>();
 		}

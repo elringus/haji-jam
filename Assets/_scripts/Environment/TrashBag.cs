@@ -7,7 +7,7 @@ public class TrashBag : MonoBehaviour
 
 	private void Awake ()
 	{
-		myRigid = rigidbody;
+		myRigid = GetComponent<Rigidbody>();
 	}
 
 	public void OnCollisionEnter (Collision colli)

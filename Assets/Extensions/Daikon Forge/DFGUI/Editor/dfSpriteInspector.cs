@@ -166,7 +166,7 @@ public class dfSpriteInspector : dfControlInspector
 				// Save the scene in case Unity crashes
 				EditorUtility.SetDirty( sprite );
 				EditorApplication.SaveScene();
-				EditorApplication.SaveAssets();
+				AssetDatabase.SaveAssets();
 
 				dfEditorUtil.DelayedInvoke( () =>
 				{

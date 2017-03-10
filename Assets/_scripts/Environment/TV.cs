@@ -16,24 +16,28 @@ public class TV : MonoBehaviour
 	private void OnApplicationQuit () { _instance = null; }
 	#endregion
 
-	public Texture CommMovie;
+	public WebGLMovieTexture CommMovie;
 	public Texture MGSTexture;
 
 	private void Start ()
 	{
-		renderer.materials[1].mainTexture = CommMovie;
-		((MovieTexture)renderer.materials[1].mainTexture).loop = true;
-		((MovieTexture)renderer.materials[1].mainTexture).Play();
+        CommMovie = new WebGLMovieTexture("StreamingAssets/vid_Comm.ogg");
+
+        GetComponent<Renderer>().materials[1].mainTexture = CommMovie;
+        CommMovie.Play();
+  //      ((MovieTexture)GetComponent<Renderer>().materials[1].mainTexture).loop = true;
+		//((MovieTexture)GetComponent<Renderer>().materials[1].mainTexture).Play();
 	}
 
 	private void Update ()
 	{
-		//if (!((MovieTexture)renderer.materials[1].mainTexture).isPlaying) 
-		//	((MovieTexture)renderer.materials[1].mainTexture).Play();
-	}
+        if (CommMovie != null) CommMovie.Update();
+        //if (!((MovieTexture)renderer.materials[1].mainTexture).isPlaying) 
+        //	((MovieTexture)renderer.materials[1].mainTexture).Play();
+    }
 
 	public void SwitchMGS ()
 	{
-		renderer.materials[1].mainTexture = MGSTexture;
-	}
+		GetComponent<Renderer>().materials[1].mainTexture = MGSTexture;
+    }
 }

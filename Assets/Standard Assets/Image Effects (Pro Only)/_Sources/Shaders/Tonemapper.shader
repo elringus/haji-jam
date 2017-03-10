@@ -10,7 +10,7 @@ Shader "Hidden/Tonemapper" {
 	#include "UnityCG.cginc"
 	 
 	struct v2f {
-		float4 pos : POSITION;
+		float4 pos : SV_POSITION;
 		float2 uv : TEXCOORD0;
 	};
 	
@@ -21,6 +21,7 @@ Shader "Hidden/Tonemapper" {
 	float4 _HdrParams;
 	float2 intensity;
 	float4 _MainTex_TexelSize;
+	half4 _MainTex_ST;
 	float _AdaptionSpeed;
 	float _ExposureAdjustment;
 	float _RangeScale;
@@ -33,29 +34,29 @@ Shader "Hidden/Tonemapper" {
 		return o;
 	} 
 
-	float4 fragLog(v2f i) : COLOR 
+	float4 fragLog(v2f i) : SV_Target 
 	{
-		const float DELTA = 0.0001f;
+		const float EPSILON = 1e-4h;
  
 		float fLogLumSum = 0.0f;
  
-		fLogLumSum += log( Luminance(tex2D(_MainTex, i.uv + _MainTex_TexelSize.xy * float2(-1,-1)).rgb) + DELTA);		
-		fLogLumSum += log( Luminance(tex2D(_MainTex, i.uv + _MainTex_TexelSize.xy * float2(1,1)).rgb) + DELTA);		
-		fLogLumSum += log( Luminance(tex2D(_MainTex, i.uv + _MainTex_TexelSize.xy * float2(-1,1)).rgb) + DELTA);		
-		fLogLumSum += log( Luminance(tex2D(_MainTex, i.uv + _MainTex_TexelSize.xy * float2(1,-1)).rgb) + DELTA);		
+		fLogLumSum += log( max( EPSILON, Luminance(tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv + _MainTex_TexelSize.xy * float2(-1,-1), _MainTex_ST)).rgb)));
+		fLogLumSum += log( max( EPSILON, Luminance(tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv + _MainTex_TexelSize.xy * float2( 1, 1), _MainTex_ST)).rgb)));
+		fLogLumSum += log( max( EPSILON, Luminance(tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv + _MainTex_TexelSize.xy * float2(-1, 1), _MainTex_ST)).rgb)));
+		fLogLumSum += log( max( EPSILON, Luminance(tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv + _MainTex_TexelSize.xy * float2( 1,-1), _MainTex_ST)).rgb)));
 
 		float avg = fLogLumSum / 4.0;
 		return float4(avg, avg, avg, avg);
 	}
 
-	float4 fragExp(v2f i) : COLOR 
+	float4 fragExp(v2f i) : SV_Target 
 	{
 		float2 lum = float2(0.0f, 0.0f);
 		
-		lum += tex2D(_MainTex, i.uv  + _MainTex_TexelSize.xy * float2(-1,-1)).xy;	
-		lum += tex2D(_MainTex, i.uv  + _MainTex_TexelSize.xy * float2(1,1)).xy;	
-		lum += tex2D(_MainTex, i.uv + _MainTex_TexelSize.xy * float2(1,-1)).xy;	
-		lum += tex2D(_MainTex, i.uv  + _MainTex_TexelSize.xy * float2(-1,1)).xy;	
+		lum += tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv  + _MainTex_TexelSize.xy * float2(-1,-1), _MainTex_ST)).xy;
+		lum += tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv  + _MainTex_TexelSize.xy * float2(1,1), _MainTex_ST)).xy;
+		lum += tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv + _MainTex_TexelSize.xy * float2(1,-1), _MainTex_ST)).xy;
+		lum += tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv  + _MainTex_TexelSize.xy * float2(-1,1), _MainTex_ST)).xy;
 
 		lum = exp(lum / 4.0f);
 		
@@ -119,10 +120,10 @@ Shader "Hidden/Tonemapper" {
 	// NOTE/OPTIMIZATION: we're not going the extra CIE detour anymore, but
 	// scale with the OUT/IN luminance ratio,this is sooooo much faster 
 	
-	float4 fragAdaptive(v2f i) : COLOR 
+	float4 fragAdaptive(v2f i) : SV_Target 
 	{
 		float avgLum = tex2D(_SmallTex, i.uv).x;
-		float4 color = tex2D (_MainTex, i.uv);
+		float4 color = tex2D (_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv, _MainTex_ST));
 		
 		float cieLum = max(0.000001, Luminance(color.rgb)); //ToCIE(color.rgb);
 		
@@ -138,10 +139,10 @@ Shader "Hidden/Tonemapper" {
 		return color;
 	}
 	
-	float4 fragAdaptiveAutoWhite(v2f i) : COLOR 
+	float4 fragAdaptiveAutoWhite(v2f i) : SV_Target 
 	{			
 		float2 avgLum = tex2D(_SmallTex, i.uv).xy;
-		float4 color = tex2D(_MainTex, i.uv);
+		float4 color = tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv, _MainTex_ST));
 		
 		float cieLum = max(0.000001, Luminance(color.rgb)); //ToCIE(color.rgb);
 		
@@ -157,9 +158,9 @@ Shader "Hidden/Tonemapper" {
 		return color;
 	}
 	
-	float4 fragCurve(v2f i) : COLOR 
+	float4 fragCurve(v2f i) : SV_Target 
 	{
-		float4 color = tex2D(_MainTex, i.uv);
+		float4 color = tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv, _MainTex_ST));
 		float3 cie = ToCIE(color.rgb);
 		
 		// Remap to new lum range
@@ -170,7 +171,7 @@ Shader "Hidden/Tonemapper" {
 		return color;		
 	}	
 	
-	float4 fragHable(v2f i) : COLOR
+	float4 fragHable(v2f i) : SV_Target
 	{
 		const float A = 0.15;
 		const float B = 0.50;
@@ -180,7 +181,7 @@ Shader "Hidden/Tonemapper" {
 		const float F = 0.30;
 		const float W = 11.2;
 
-		float3 texColor = tex2D(_MainTex, i.uv).rgb;
+		float3 texColor = tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv, _MainTex_ST)).rgb;
 		texColor *= _ExposureAdjustment;
 
 		float ExposureBias = 2.0;
@@ -197,36 +198,36 @@ Shader "Hidden/Tonemapper" {
 	}
 
 	// we are doing it on luminance here (better color preservation, but some other problems like very fast saturation)
-	float4 fragSimpleReinhard(v2f i) : COLOR
+	float4 fragSimpleReinhard(v2f i) : SV_Target
 	{
-		float4 texColor = tex2D(_MainTex, i.uv);
+		float4 texColor = tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv, _MainTex_ST));
 		float lum = Luminance(texColor.rgb); 
 		float lumTm = lum * _ExposureAdjustment;
 		float scale = lumTm / (1+lumTm);  
 		return float4(texColor.rgb * scale / lum, texColor.a);
 	}
 	
-	float4 fragOptimizedHejiDawson(v2f i) : COLOR 
+	float4 fragOptimizedHejiDawson(v2f i) : SV_Target 
 	{
-		float4 texColor = tex2D(_MainTex, i.uv );
+		float4 texColor = tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv, _MainTex_ST));
 		texColor *= _ExposureAdjustment;
 		float4 X = max(float4(0.0,0.0,0.0,0.0), texColor-0.004);
 		float4 retColor = (X*(6.2*X+.5))/(X*(6.2*X+1.7)+0.06);
 		return retColor*retColor;
 	}		
 
-	float4 fragPhotographic(v2f i) : COLOR
+	float4 fragPhotographic(v2f i) : SV_Target
 	{
-		float4 texColor = tex2D(_MainTex, i.uv);
+		float4 texColor = tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv, _MainTex_ST));
 		return 1-exp2(-_ExposureAdjustment * texColor);
 	}
 	
-	float4 fragDownsample(v2f i) : COLOR
+	float4 fragDownsample(v2f i) : SV_Target
 	{
-		float4 tapA = tex2D(_MainTex, i.uv + _MainTex_TexelSize * 0.5);
-		float4 tapB = tex2D(_MainTex, i.uv - _MainTex_TexelSize * 0.5);
-		float4 tapC = tex2D(_MainTex, i.uv + _MainTex_TexelSize * float2(0.5,-0.5));
-		float4 tapD = tex2D(_MainTex, i.uv - _MainTex_TexelSize * float2(0.5,-0.5));
+		float4 tapA = tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv + _MainTex_TexelSize * 0.5, _MainTex_ST));
+		float4 tapB = tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv - _MainTex_TexelSize * 0.5, _MainTex_ST));
+		float4 tapC = tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv + _MainTex_TexelSize * float2(0.5,-0.5), _MainTex_ST));
+		float4 tapD = tex2D(_MainTex, UnityStereoScreenSpaceUVAdjust(i.uv - _MainTex_TexelSize * float2(0.5,-0.5), _MainTex_ST));
 		
 		float4 average = (tapA+tapB+tapC+tapD)/4;
 		average.y = max(max(tapA.y,tapB.y), max(tapC.y,tapD.y));
@@ -240,10 +241,8 @@ Subshader {
  // adaptive reinhhard apply
  Pass {
 	  ZTest Always Cull Off ZWrite Off
-	  Fog { Mode off }      
 
       CGPROGRAM
-      #pragma fragmentoption ARB_precision_hint_fastest 
       #pragma vertex vert
       #pragma fragment fragAdaptive
       ENDCG
@@ -252,10 +251,8 @@ Subshader {
   // 1
  Pass {
 	  ZTest Always Cull Off ZWrite Off
-	  Fog { Mode off }      
 
       CGPROGRAM
-      #pragma fragmentoption ARB_precision_hint_fastest 
       #pragma vertex vert
       #pragma fragment fragLog
       ENDCG
@@ -263,11 +260,9 @@ Subshader {
   // 2
  Pass {
 	  ZTest Always Cull Off ZWrite Off
-	  Fog { Mode off }      
-		Blend SrcAlpha OneMinusSrcAlpha
+	  Blend SrcAlpha OneMinusSrcAlpha
 
       CGPROGRAM
-      #pragma fragmentoption ARB_precision_hint_fastest 
       #pragma vertex vert
       #pragma fragment fragExp
       ENDCG
@@ -275,12 +270,10 @@ Subshader {
   // 3 
  Pass {
 	  ZTest Always Cull Off ZWrite Off
-	  Fog { Mode off }
 
 	  Blend Off   
 
       CGPROGRAM
-      #pragma fragmentoption ARB_precision_hint_fastest 
       #pragma vertex vert
       #pragma fragment fragExp
       ENDCG
@@ -289,10 +282,8 @@ Subshader {
   // 4 user controllable tonemap curve
   Pass {
 	  ZTest Always Cull Off ZWrite Off
-	  Fog { Mode off }      
 
       CGPROGRAM
-      #pragma fragmentoption ARB_precision_hint_fastest 
       #pragma vertex vert
       #pragma fragment fragCurve
       ENDCG
@@ -301,10 +292,8 @@ Subshader {
   // 5 tonemapping in uncharted
   Pass {
 	  ZTest Always Cull Off ZWrite Off
-	  Fog { Mode off }      
 
       CGPROGRAM
-      #pragma fragmentoption ARB_precision_hint_fastest 
       #pragma vertex vert
       #pragma fragment fragHable
       ENDCG
@@ -313,10 +302,8 @@ Subshader {
   // 6 simple tonemapping based reinhard
   Pass {
 	  ZTest Always Cull Off ZWrite Off
-	  Fog { Mode off }      
 
       CGPROGRAM
-      #pragma fragmentoption ARB_precision_hint_fastest 
       #pragma vertex vert
       #pragma fragment fragSimpleReinhard
       ENDCG
@@ -325,10 +312,8 @@ Subshader {
   // 7 OptimizedHejiDawson
   Pass {
 	  ZTest Always Cull Off ZWrite Off
-	  Fog { Mode off }      
 
       CGPROGRAM
-      #pragma fragmentoption ARB_precision_hint_fastest 
       #pragma vertex vert
       #pragma fragment fragOptimizedHejiDawson
       ENDCG
@@ -337,10 +322,8 @@ Subshader {
   // 8 Photographic
   Pass {
 	  ZTest Always Cull Off ZWrite Off
-	  Fog { Mode off }      
 
       CGPROGRAM
-      #pragma fragmentoption ARB_precision_hint_fastest 
       #pragma vertex vert
       #pragma fragment fragPhotographic
       ENDCG
@@ -349,10 +332,8 @@ Subshader {
   // 9 Downsample with auto white detection
   Pass {
 	  ZTest Always Cull Off ZWrite Off
-	  Fog { Mode off }      
 
       CGPROGRAM
-      #pragma fragmentoption ARB_precision_hint_fastest 
       #pragma vertex vert
       #pragma fragment fragDownsample
       ENDCG
@@ -361,10 +342,8 @@ Subshader {
  // 10 adaptive reinhhard apply with auto white
  Pass {
 	  ZTest Always Cull Off ZWrite Off
-	  Fog { Mode off }      
 
       CGPROGRAM
-      #pragma fragmentoption ARB_precision_hint_fastest 
       #pragma vertex vert
       #pragma fragment fragAdaptiveAutoWhite
       ENDCG

@@ -9,14 +9,14 @@ public class Bush : MonoBehaviour, IUsableObject
 
 	private void Awake ()
 	{
-		myColli = collider as BoxCollider;
+		myColli = GetComponent<Collider>() as BoxCollider;
 		normColliScale = myColli.size;
 		myParticles = GetComponent<ParticleSystem>();
 	}
 
 	public void Use ()
 	{
-		if (!audio.isPlaying) audio.Play();
+		if (!GetComponent<AudioSource>().isPlaying) GetComponent<AudioSource>().Play();
 		if (!PlayerController.I.Invisible)
 		{
 			PlayerController.I.Invisible = true;

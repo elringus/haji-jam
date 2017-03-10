@@ -14,9 +14,11 @@ Shader "Hidden/SeparableWeightedBlurDof34" {
 	half4 _Threshhold;
 	sampler2D _MainTex;		
 	sampler2D _TapHigh;
-		
+	
+	half4 _MainTex_ST;
+
 	struct v2f {
-		half4 pos : POSITION;
+		half4 pos : SV_POSITION;
 		half2 uv : TEXCOORD0;
 		half4 uv01 : TEXCOORD1;
 		half4 uv23 : TEXCOORD2;
@@ -24,7 +26,7 @@ Shader "Hidden/SeparableWeightedBlurDof34" {
 	};
 	
 	struct v2fSingle {
-		half4 pos : POSITION;
+		half4 pos : SV_POSITION;
 		half2 uv : TEXCOORD0;
 	};
 	
@@ -35,10 +37,10 @@ Shader "Hidden/SeparableWeightedBlurDof34" {
 	v2f vert (appdata_img v) {
 		v2f o;
 		o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
-		o.uv.xy = v.texcoord.xy;
-		o.uv01 =  v.texcoord.xyxy + offsets.xyxy * half4(1,1, -1,-1);
-		o.uv23 =  v.texcoord.xyxy + offsets.xyxy * half4(1,1, -1,-1) * 2.0;
-		o.uv45 =  v.texcoord.xyxy + offsets.xyxy * half4(1,1, -1,-1) * 3.0;
+		o.uv.xy = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy, _MainTex_ST);
+		o.uv01 =  UnityStereoScreenSpaceUVAdjust(v.texcoord.xyxy + offsets.xyxy * half4(1,1, -1,-1), _MainTex_ST);
+		o.uv23 =  UnityStereoScreenSpaceUVAdjust(v.texcoord.xyxy + offsets.xyxy * half4(1,1, -1,-1) * 2.0, _MainTex_ST);
+		o.uv45 =  UnityStereoScreenSpaceUVAdjust(v.texcoord.xyxy + offsets.xyxy * half4(1,1, -1,-1) * 3.0, _MainTex_ST);
 
 		return o;  
 	}
@@ -56,7 +58,7 @@ Shader "Hidden/SeparableWeightedBlurDof34" {
 		
 	// mostly used for foreground, so more gaussian-like
 			
-	half4 fragBlurUnweighted (v2f i) : COLOR {
+	half4 fragBlurUnweighted (v2f i) : SV_Target {
 		half4 blurredColor = half4 (0,0,0,0);
 
 		half4 sampleA = tex2D(_MainTex, i.uv.xy);
@@ -80,7 +82,7 @@ Shader "Hidden/SeparableWeightedBlurDof34" {
 
 	// used for background, so more bone curve-like
 		
-	half4 fragBlurWeighted (v2f i) : COLOR {
+	half4 fragBlurWeighted (v2f i) : SV_Target {
 		half4 blurredColor = half4 (0,0,0,0);
 
 		half4 sampleA = tex2D(_MainTex, i.uv.xy);
@@ -110,8 +112,8 @@ Shader "Hidden/SeparableWeightedBlurDof34" {
 		
 		return color;
 	}
-	
-	half4 fragBlurDark (v2f i) : COLOR {
+	 
+	half4 fragBlurDark (v2f i) : SV_Target {
 		half4 blurredColor = half4 (0,0,0,0);
 
 		half4 sampleA = tex2D(_MainTex, i.uv.xy);
@@ -144,7 +146,7 @@ Shader "Hidden/SeparableWeightedBlurDof34" {
 		
 	// not used atm
 	
-	half4 fragBlurUnweightedDark (v2f i) : COLOR {
+	half4 fragBlurUnweightedDark (v2f i) : SV_Target {
 		half4 blurredColor = half4 (0,0,0,0);
 
 		half4 sampleA = tex2D(_MainTex, i.uv.xy);
@@ -172,11 +174,14 @@ Shader "Hidden/SeparableWeightedBlurDof34" {
 	
 	sampler2D _TapMedium;
 	sampler2D _TapLow;
-	
-	half4 fragMixMediumAndLowTap (v2fSingle i) : COLOR 
+
+	half4 _TapMedium_ST;
+	half4 _TapLow_ST;
+
+	half4 fragMixMediumAndLowTap (v2fSingle i) : SV_Target 
 	{
-	 	half4 tapMedium = tex2D (_TapMedium, i.uv.xy);
-		half4 tapLow = tex2D (_TapLow, i.uv.xy);
+	 	half4 tapMedium = tex2D (_TapMedium, UnityStereoScreenSpaceUVAdjust(i.uv.xy, _TapMedium_ST));
+		half4 tapLow = tex2D (_TapLow, UnityStereoScreenSpaceUVAdjust(i.uv.xy, _TapLow_ST));
 		tapMedium.a *= tapMedium.a;
 		
 		tapLow.rgb = lerp (tapMedium.rgb, tapLow.rgb, (tapMedium.a * tapMedium.a));
@@ -187,25 +192,20 @@ Shader "Hidden/SeparableWeightedBlurDof34" {
 	
 Subshader {
 	ZTest Always Cull Off ZWrite Off
-	Fog { Mode off }  
 	  	
   Pass {     
       
       CGPROGRAM
       
-      #pragma fragmentoption ARB_precision_hint_fastest
       #pragma vertex vert
       #pragma fragment fragBlurWeighted
-      
       ENDCG
   }
   Pass {   
       CGPROGRAM
       
-      #pragma fragmentoption ARB_precision_hint_fastest
       #pragma vertex vert
       #pragma fragment fragBlurUnweighted
-      
       ENDCG
   }    
   
@@ -214,19 +214,15 @@ Subshader {
   Pass {    
       CGPROGRAM
       
-      #pragma fragmentoption ARB_precision_hint_fastest
       #pragma vertex vert
       #pragma fragment fragBlurUnweightedDark
-      
       ENDCG
   }
   Pass {    
       CGPROGRAM
       
-      #pragma fragmentoption ARB_precision_hint_fastest
       #pragma vertex vertSingleTex
       #pragma fragment fragMixMediumAndLowTap
-      
       ENDCG
   }   
   
@@ -235,10 +231,8 @@ Subshader {
   Pass {    
       CGPROGRAM
       
-      #pragma fragmentoption ARB_precision_hint_fastest
       #pragma vertex vert
       #pragma fragment fragBlurDark
-      
       ENDCG
   }
 }

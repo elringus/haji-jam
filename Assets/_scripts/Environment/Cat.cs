@@ -5,7 +5,7 @@ public class Cat : MonoBehaviour
 {
 	private void Awake ()
 	{
-		animation["ani_Cat"].speed = .9f;
+		GetComponent<Animation>()["ani_Cat"].speed = .9f;
 	}
 
 	private void Start ()
@@ -15,6 +15,6 @@ public class Cat : MonoBehaviour
 
 	private void Animate ()
 	{
-		animation.CrossFade("ani_Cat");
+		GetComponent<Animation>().CrossFade("ani_Cat");
 	}
 }

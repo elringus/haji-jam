@@ -1918,7 +1918,7 @@ public class dfControlInspector : Editor
 		{
 			if( SceneView.currentDrawingSceneView.camera != null )
 			{
-				if( !SceneView.currentDrawingSceneView.camera.isOrthoGraphic )
+				if( !SceneView.currentDrawingSceneView.camera.orthographic )
 				{
 					return float.MinValue;
 				}

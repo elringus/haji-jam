@@ -10,7 +10,7 @@ public class NewGame : MonoBehaviour
 
 	private void Start ()
 	{
-		audio.Play();
+		GetComponent<AudioSource>().Play();
 		labelLoading.GetComponent<dfTweenFloat>().Play();
 	}
 

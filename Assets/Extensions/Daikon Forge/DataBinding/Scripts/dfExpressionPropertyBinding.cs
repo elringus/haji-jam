@@ -158,43 +158,43 @@ public class dfExpressionPropertyBinding : MonoBehaviour, IDataBindingComponent
 			return;
 
 		// Define the constants and types that will be available to the script expression
-		var settings = new dfScriptEngineSettings()
-		{
-			Constants = new Dictionary<string, object>()
-			{
-				// Add any other types whose static members you wish 
-				// to be available to the script expression
-				{ "Application", typeof( UnityEngine.Application ) },
-				{ "Color", typeof( UnityEngine.Color ) },
-				{ "Color32", typeof( UnityEngine.Color32 ) },
-				{ "Random", typeof( UnityEngine.Random ) },
-				{ "Time", typeof( UnityEngine.Time ) },
-				{ "ScriptableObject", typeof( UnityEngine.ScriptableObject ) },
-				{ "Vector2", typeof( UnityEngine.Vector2 ) },
-				{ "Vector3", typeof( UnityEngine.Vector3 ) },
-				{ "Vector4", typeof( UnityEngine.Vector4 ) },
-				{ "Quaternion", typeof( UnityEngine.Quaternion ) },
-				{ "Matrix", typeof( UnityEngine.Matrix4x4 ) },
-				{ "Mathf", typeof( UnityEngine.Mathf ) }
-			}
-		};
+		//var settings = new dfScriptEngineSettings()
+		//{
+		//	Constants = new Dictionary<string, object>()
+		//	{
+		//		// Add any other types whose static members you wish 
+		//		// to be available to the script expression
+		//		{ "Application", typeof( UnityEngine.Application ) },
+		//		{ "Color", typeof( UnityEngine.Color ) },
+		//		{ "Color32", typeof( UnityEngine.Color32 ) },
+		//		{ "Random", typeof( UnityEngine.Random ) },
+		//		{ "Time", typeof( UnityEngine.Time ) },
+		//		{ "ScriptableObject", typeof( UnityEngine.ScriptableObject ) },
+		//		{ "Vector2", typeof( UnityEngine.Vector2 ) },
+		//		{ "Vector3", typeof( UnityEngine.Vector3 ) },
+		//		{ "Vector4", typeof( UnityEngine.Vector4 ) },
+		//		{ "Quaternion", typeof( UnityEngine.Quaternion ) },
+		//		{ "Matrix", typeof( UnityEngine.Matrix4x4 ) },
+		//		{ "Mathf", typeof( UnityEngine.Mathf ) }
+		//	}
+		//};
 		
 		// Add any variables you want the script expression to have access to
 		if( DataSource is dfDataObjectProxy )
 		{
 			var proxy = DataSource as dfDataObjectProxy;
-			settings.AddVariable( new dfScriptVariable( "source", null, proxy.DataType ) );
+			//settings.AddVariable( new dfScriptVariable( "source", null, proxy.DataType ) );
 		}
 		else
 		{
-			settings.AddVariable( new dfScriptVariable( "source", DataSource ) );
+			//settings.AddVariable( new dfScriptVariable( "source", DataSource ) );
 		}
 
 		// Compile the script expression and store the resulting Delegate.
 		// Note that any syntax errors or compile errors will throw an 
 		// exception here, which is why we don't init the target property
 		// or set the isBound variable until after this step.
-		compiledExpression = dfScriptEngine.CompileExpression( expression, settings );
+		//compiledExpression = dfScriptEngine.CompileExpression( expression, settings );
 
 		// Initialize our target property
 		targetProperty = DataTarget.GetProperty();

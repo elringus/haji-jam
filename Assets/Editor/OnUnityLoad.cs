@@ -15,7 +15,7 @@ public class OnUnityLoad {
 
 			if (EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isPlaying) {
 				EditorApplication.SaveScene();
-				EditorApplication.SaveAssets();
+				AssetDatabase.SaveAssets();
 			}
 
 		};

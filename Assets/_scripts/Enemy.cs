@@ -7,7 +7,7 @@ public class Enemy : MonoBehaviour
 	private Animator myAnimator;
 	private Light myLight;
 	private Vector3 prevPos;
-	private NavMeshAgent myAgent;
+	public UnityEngine.AI.NavMeshAgent myAgent;
 
 	public Transform[] wPoints;
 	public Transform[] lPoints;
@@ -34,7 +34,7 @@ public class Enemy : MonoBehaviour
 		myLight = GetComponentInChildren<Light>();
 		myLight.spotAngle = viewAngle * 2;
 		myLight.range = viewRange + 3;
-		myAgent = GetComponent<NavMeshAgent>();
+		//myAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
 		myAudio = GetComponent<AudioSource>();
 	}
 
@@ -42,7 +42,7 @@ public class Enemy : MonoBehaviour
 	{
 		if (wPoints.Length > 0)
 		{
-			myAgent.SetDestination(wPoints[0].position);
+			myAgent.destination = wPoints[0].position;
 			currentPoint = wPoints[0];
 		}
 		else if (lPoints.Length > 0)
@@ -56,7 +56,7 @@ public class Enemy : MonoBehaviour
 
 	private void Update ()
 	{
-		if (myTransform.name == "enemy-grandbaba" && Random.Range(0, 2000) == 0 && !myAudio.isPlaying) { myAudio.clip = sndMurs[Random.Range(0, 3)]; myAudio.Play(); }
+        if (myTransform.name == "enemy-grandbaba" && Random.Range(0, 2000) == 0 && !myAudio.isPlaying) { myAudio.clip = sndMurs[Random.Range(0, 3)]; myAudio.Play(); }
 
 		if (!LevelManager.I.readyToRestart && LevelManager.I.started)
 		{
@@ -101,7 +101,7 @@ public class Enemy : MonoBehaviour
 				}
 			}
 		}
-		else if (wPoints.Length > 0) myAgent.Stop();
+		//else if (wPoints.Length > 0) myAgent.Stop();
 
 		Animate();
 	}

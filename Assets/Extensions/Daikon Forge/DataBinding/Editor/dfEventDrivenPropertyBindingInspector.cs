@@ -430,7 +430,7 @@ public class dfEventDrivenPropertyBindingInspector : Editor
 				// Save the scene in case Unity crashes
 				EditorUtility.SetDirty( activeObject );
 				EditorApplication.SaveScene();
-				EditorApplication.SaveAssets();
+				AssetDatabase.SaveAssets();
 
 				dfEditorUtil.DelayedInvoke( () =>
 				{

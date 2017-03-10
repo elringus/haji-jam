@@ -38,15 +38,11 @@ Shader "Hidden/FXAA III (Console)" {
 	SubShader {
 		Pass {
 			ZTest Always Cull Off ZWrite Off
-			Fog { Mode off }
 		
 		CGPROGRAM
 		#pragma vertex vert
 		#pragma fragment frag
-		#pragma glsl
-		#pragma fragmentoption ARB_precision_hint_fastest
 		#pragma target 3.0
-		#pragma exclude_renderers d3d11_9x
 		
 		#include "UnityCG.cginc"
 
@@ -54,6 +50,7 @@ Shader "Hidden/FXAA III (Console)" {
 		uniform half _EdgeThresholdMin;
 		uniform half _EdgeThreshold;
 		uniform half _EdgeSharpness;
+		half4 _MainTex_ST;
 
 		struct v2f {
 			float4 pos : SV_POSITION;
@@ -80,7 +77,11 @@ Shader "Hidden/FXAA III (Console)" {
 			float4 rcpSize;
 			rcpSize.xy = -_MainTex_TexelSize.xy * 0.5f;
 			rcpSize.zw = _MainTex_TexelSize.xy * 0.5f;			
-			
+#if defined (SHADER_API_PSP2)
+			//cg compiler linker bug workaround
+			float almostzero = v.texcoord.x*0.000001f;
+			rcpSize.x += almostzero;
+#endif
 			o.interpolatorA = extents;
 			o.interpolatorB = rcpSize;
 			o.interpolatorC = rcpSize;
@@ -93,9 +94,9 @@ Shader "Hidden/FXAA III (Console)" {
 
 // hacky support for NaCl
 #if defined(SHADER_API_GLES) && defined(SHADER_API_DESKTOP)
-		#define FxaaTexTop(t, p) tex2D(t, p) 
+		#define FxaaTexTop(t, p) tex2D(t, UnityStereoScreenSpaceUVAdjust(p, _MainTex_ST)) 
 #else
-		#define FxaaTexTop(t, p) tex2Dlod(t, float4(p, 0.0, 0.0))
+		#define FxaaTexTop(t, p) tex2Dlod(t, float4(UnityStereoScreenSpaceUVAdjust(p, _MainTex_ST), 0.0, 0.0))
 #endif
 
 		inline half TexLuminance( float2 uv )
@@ -158,7 +159,7 @@ Shader "Hidden/FXAA III (Console)" {
 				return rgbyB;
 		}
 
-		half4 frag (v2f i) : COLOR
+		half4 frag (v2f i) : SV_Target
 		{
 			half3 color = FxaaPixelShader(i.uv, i.interpolatorA, i.interpolatorB, i.interpolatorC);
 			return half4(color, 1.0);

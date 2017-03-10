@@ -9,12 +9,12 @@ Shader "Hidden/MultipassHollywoodFlares" {
 	#include "UnityCG.cginc"
 	
 	struct v2f {
-		half4 pos : POSITION;
+		half4 pos : SV_POSITION;
 		half2 uv : TEXCOORD0;
 	};
 
 	struct v2f_opts {
-		half4 pos : POSITION;
+		half4 pos : SV_POSITION;
 		half2 uv[7] : TEXCOORD0;
 	};
 	
@@ -25,7 +25,8 @@ Shader "Hidden/MultipassHollywoodFlares" {
 	half2 _Threshhold;
 	
 	half4 _MainTex_TexelSize;
-	
+	half4 _MainTex_ST;
+
 	sampler2D _MainTex;
 	sampler2D _NonBlurredTex;
 		
@@ -40,38 +41,38 @@ Shader "Hidden/MultipassHollywoodFlares" {
 		v2f_opts o;
 		o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
 		half b = stretchWidth;		
-		o.uv[0] = v.texcoord.xy;
-		o.uv[1] = v.texcoord.xy + b * 2.0 * offsets.xy;
-		o.uv[2] = v.texcoord.xy - b * 2.0 * offsets.xy;
-		o.uv[3] = v.texcoord.xy + b * 4.0 * offsets.xy;
-		o.uv[4] = v.texcoord.xy - b * 4.0 * offsets.xy;
-		o.uv[5] = v.texcoord.xy + b * 6.0 * offsets.xy;
-		o.uv[6] = v.texcoord.xy - b * 6.0 * offsets.xy;
+		o.uv[0] = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy, _MainTex_ST);
+		o.uv[1] = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy + b * 2.0 * offsets.xy, _MainTex_ST);
+		o.uv[2] = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy - b * 2.0 * offsets.xy, _MainTex_ST);
+		o.uv[3] = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy + b * 4.0 * offsets.xy, _MainTex_ST);
+		o.uv[4] = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy - b * 4.0 * offsets.xy, _MainTex_ST);
+		o.uv[5] = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy + b * 6.0 * offsets.xy, _MainTex_ST);
+		o.uv[6] = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy - b * 6.0 * offsets.xy, _MainTex_ST);
 		return o;
 	}
 	
 	v2f_opts vertVerticalCoords (appdata_img v) {
 		v2f_opts o;
 		o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
-		o.uv[0] = v.texcoord.xy;
-		o.uv[1] = v.texcoord.xy + 0.5 * _MainTex_TexelSize.xy * half2(0,1);
-		o.uv[2] = v.texcoord.xy - 0.5 * _MainTex_TexelSize.xy * half2(0,1);
-		o.uv[3] = v.texcoord.xy + 1.5 * _MainTex_TexelSize.xy * half2(0,1);
-		o.uv[4] = v.texcoord.xy - 1.5 * _MainTex_TexelSize.xy * half2(0,1);
-		o.uv[5] = v.texcoord.xy + 2.5 * _MainTex_TexelSize.xy * half2(0,1);
-		o.uv[6] = v.texcoord.xy - 2.5 * _MainTex_TexelSize.xy * half2(0,1);
+		o.uv[0] = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy, _MainTex_ST);
+		o.uv[1] = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy + 0.5 * _MainTex_TexelSize.xy * half2(0,1), _MainTex_ST);
+		o.uv[2] = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy - 0.5 * _MainTex_TexelSize.xy * half2(0,1), _MainTex_ST);
+		o.uv[3] = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy + 1.5 * _MainTex_TexelSize.xy * half2(0,1), _MainTex_ST);
+		o.uv[4] = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy - 1.5 * _MainTex_TexelSize.xy * half2(0,1), _MainTex_ST);
+		o.uv[5] = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy + 2.5 * _MainTex_TexelSize.xy * half2(0,1), _MainTex_ST);
+		o.uv[6] = UnityStereoScreenSpaceUVAdjust(v.texcoord.xy - 2.5 * _MainTex_TexelSize.xy * half2(0,1), _MainTex_ST);
 		return o;
 	}	
 		
 	// deprecated
-	half4 fragPrepare (v2f i) : COLOR {
+	half4 fragPrepare (v2f i) : SV_Target {
 		half4 color = tex2D (_MainTex, i.uv);
 		half4 colorNb = tex2D (_NonBlurredTex, i.uv);
 		return color * tintColor * 0.5 + colorNb * normalize (tintColor) * 0.5;
 	}
 
 
-	half4 fragPreAndCut (v2f_opts i) : COLOR {
+	half4 fragPreAndCut (v2f_opts i) : SV_Target {
 		half4 color = tex2D (_MainTex, i.uv[0]);
 		color += tex2D (_MainTex, i.uv[1]);
 		color += tex2D (_MainTex, i.uv[2]);
@@ -82,7 +83,7 @@ Shader "Hidden/MultipassHollywoodFlares" {
 		return max(color / 7.0 - _Threshhold.x, 0.0) * _Threshhold.y * tintColor;
 	}
 
-	half4 fragStretch (v2f_opts i) : COLOR {
+	half4 fragStretch (v2f_opts i) : SV_Target {
 		half4 color = tex2D (_MainTex, i.uv[0]);
 		color = max (color, tex2D (_MainTex, i.uv[1]));
 		color = max (color, tex2D (_MainTex, i.uv[2]));
@@ -93,7 +94,7 @@ Shader "Hidden/MultipassHollywoodFlares" {
 		return color;
 	}	
 	
-	half4 fragPost (v2f_opts i) : COLOR {
+	half4 fragPost (v2f_opts i) : SV_Target {
 		half4 color = tex2D (_MainTex, i.uv[0]);
 		color += tex2D (_MainTex, i.uv[1]);
 		color += tex2D (_MainTex, i.uv[2]);
@@ -108,12 +109,10 @@ Shader "Hidden/MultipassHollywoodFlares" {
 	
 Subshader {
 	  ZTest Always Cull Off ZWrite Off
-	  Fog { Mode off } 
  Pass {     
 
       CGPROGRAM
       
-      #pragma fragmentoption ARB_precision_hint_fastest
       #pragma vertex vert
       #pragma fragment fragPrepare
       
@@ -124,7 +123,6 @@ Subshader {
 
       CGPROGRAM
       
-      #pragma fragmentoption ARB_precision_hint_fastest
       #pragma vertex vertStretch
       #pragma fragment fragStretch
       
@@ -135,7 +133,6 @@ Subshader {
 
       CGPROGRAM
       
-      #pragma fragmentoption ARB_precision_hint_fastest
       #pragma vertex vertVerticalCoords
       #pragma fragment fragPreAndCut
       
@@ -146,7 +143,6 @@ Subshader {
 
       CGPROGRAM
       
-      #pragma fragmentoption ARB_precision_hint_fastest
       #pragma vertex vertVerticalCoords
       #pragma fragment fragPost
       

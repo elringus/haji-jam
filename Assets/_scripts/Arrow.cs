@@ -23,7 +23,7 @@ public class Arrow : MonoBehaviour
 	private void Awake ()
 	{
 		myTransform = transform;
-		myRenderer = renderer;
+		myRenderer = GetComponent<Renderer>();
 		myRenderer.enabled = false;
 	}
 

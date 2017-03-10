@@ -5,6 +5,6 @@ public class Point : MonoBehaviour
 {
 	private void Awake ()
 	{
-		renderer.enabled = false;
+		GetComponent<Renderer>().enabled = false;
 	}
 }

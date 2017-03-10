@@ -151,7 +151,7 @@ public class dfGUIWizard : EditorWindow
 		cam.farClipPlane = 5;
 		cam.clearFlags = CameraClearFlags.Depth;
 		cam.cullingMask = ( 1 << layer );
-		cam.isOrthoGraphic = orthographic;
+		cam.orthographic = orthographic;
 		 
 		dfGUIManager guiManager = go.AddComponent<dfGUIManager>();
 		guiManager.RenderCamera = cam;

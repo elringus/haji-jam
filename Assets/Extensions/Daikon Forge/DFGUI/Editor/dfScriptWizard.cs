@@ -197,7 +197,7 @@ public class dfScriptWizard : EditorWindow
 
 		var gameObj = target.gameObject;
 		var script = AssetDatabase.LoadAssetAtPath( path.MakeRelativePath(), typeof( MonoScript ) ) as MonoScript;
-		InternalEditorUtility.AddScriptComponentUnchecked( gameObj, script );
+		//InternalEditorUtility.AddScriptComponentUnchecked( gameObj, script );
 
 		#region Delayed execution
 

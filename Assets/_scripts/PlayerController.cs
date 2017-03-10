@@ -26,6 +26,8 @@ public class PlayerController : MonoBehaviour
 	public bool Invisible;
 	public bool InBox;
 
+    public bool IsMoving { get { return MyController.velocity.sqrMagnitude > 0; } }
+
 	private void Awake ()
 	{
 		myTransform = transform;
@@ -35,13 +37,14 @@ public class PlayerController : MonoBehaviour
 
 	private void Update ()
 	{
-		if (LevelManager.I.started && !LevelManager.I.readyToRestart && (!LevelManager.clickToRun || (LevelManager.clickToRun && Input.GetMouseButton(0))))
+        if (LevelManager.I.started && !LevelManager.I.readyToRestart && (!LevelManager.clickToRun || (LevelManager.clickToRun && Input.GetMouseButton(0))))
 		{
 			MoveSpeed = Mathf.Clamp(Vector3.Distance(myTransform.position, Pointer.I.Transform.position) * 2, 0, InBox ? 2.2f : 15);
 
 			myTransform.LookAt(Pointer.I.Transform.position);
 			myTransform.eulerAngles = new Vector3(0, myTransform.eulerAngles.y, 0);
-			if (!Invisible && Vector3.Distance(myTransform.position, Pointer.I.Transform.position) > 2) MyController.Move(myTransform.TransformDirection(Vector3.forward) * Time.deltaTime * MoveSpeed);
+			if (!Invisible && Vector3.Distance(myTransform.position, Pointer.I.Transform.position) > 2)
+                MyController.Move(myTransform.TransformDirection(Vector3.forward) * Time.deltaTime * MoveSpeed);
 
 			if (!MyController.isGrounded) MyController.Move(Vector3.down * Time.deltaTime * 5);
 		}

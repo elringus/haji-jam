@@ -596,7 +596,7 @@ public class dfScrollbar : dfControl
 
 			// Find the point where the ray intersects the thumb
 			RaycastHit hitInfo;
-			thumb.collider.Raycast( args.Ray, out hitInfo, 1000f );
+			thumb.GetComponent<Collider>().Raycast( args.Ray, out hitInfo, 1000f );
 
 			// Calculate the thumb's center in global space
 			var thumbCenter = thumb.transform.position + thumb.Pivot.TransformToCenter( thumb.Size * PixelsToUnits() );

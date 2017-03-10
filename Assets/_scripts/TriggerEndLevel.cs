@@ -20,7 +20,7 @@ public class TriggerEndLevel : MonoBehaviour
 	{
 		if (colli.CompareTag("Player"))
 		{
-			if (!audio.isPlaying) audio.Play();
+			if (!GetComponent<AudioSource>().isPlaying) GetComponent<AudioSource>().Play();
 			if (Application.loadedLevelName == "lvl_1" && !sndL1End.isPlaying) sndL1End.Play();
 			LevelManager.I.NextLevel();
 		}

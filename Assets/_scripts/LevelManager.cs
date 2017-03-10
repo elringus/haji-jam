@@ -82,7 +82,7 @@ public class LevelManager : MonoBehaviour
 			{
 				//GA.API.Design.NewEvent("restart-level-" + (Application.loadedLevel), restartCount);
 				restartCount++;
-				audio.Play();
+				GetComponent<AudioSource>().Play();
 				//S_CameraController.I.cameraFollow = true;
 				readyToRestart = true;
 				SGUI.I.labelInfo.Text = "О небо, я обнаружен!";

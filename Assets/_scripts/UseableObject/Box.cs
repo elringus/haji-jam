@@ -12,18 +12,21 @@ public class Box : MonoBehaviour, IUsableObject
 	public void Awake ()
 	{
 		myTransform = transform;
-		myColli = collider as BoxCollider;
+		myColli = GetComponent<Collider>() as BoxCollider;
 		normColliScale = myColli.size;
 		myParticles = GetComponentInChildren<ParticleSystem>();
+
+        Application.targetFrameRate = 60;
 	}
 
 	public void Update ()
 	{
 		if (charIn)
 		{
-			myTransform.position = PlayerController.I.MoveSpeed > 2 ? new Vector3(PlayerController.I.myTransform.position.x, Mathf.Lerp(myTransform.position.y, .5f + Mathf.Sin(Time.time * 15) / 3, Time.deltaTime * 5), PlayerController.I.myTransform.position.z) : PlayerController.I.myTransform.position + new Vector3(0, .5f);
+			myTransform.position = Vector3.Distance(PlayerController.I.transform.position, Pointer.I.Transform.position) > 2.2f ? 
+                new Vector3(PlayerController.I.myTransform.position.x, Mathf.Lerp(myTransform.position.y, .5f + Mathf.Sin(Time.time * 15) / 3, Time.deltaTime * 5), PlayerController.I.myTransform.position.z) : PlayerController.I.myTransform.position + new Vector3(0, .5f);
 			myTransform.rotation = PlayerController.I.myTransform.rotation;
-			myTransform.eulerAngles = new Vector3(0, myTransform.eulerAngles.y - 20, 185);
+			myTransform.eulerAngles = new Vector3(0, myTransform.eulerAngles.y - 0, 185);
 		}
 	}
 

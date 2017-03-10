@@ -103,7 +103,7 @@ public class dfGUIManagerInspector : Editor
 			}
 
 			var renderModes = new string[] { "Orthographic", "Perspective" };
-			var currentMode = camera.isOrthoGraphic ? 0 : 1;
+			var currentMode = camera.orthographic ? 0 : 1;
 			var selectedMode = EditorGUILayout.Popup( "Render Mode", currentMode, renderModes );
 			if( currentMode != selectedMode )
 			{
@@ -113,7 +113,7 @@ public class dfGUIManagerInspector : Editor
 				if( selectedMode == 0 )
 				{
 
-					camera.isOrthoGraphic = true;
+					camera.orthographic = true;
 					camera.nearClipPlane = -2;
 					camera.farClipPlane = 2;
 					camera.transform.position = view.transform.position;
@@ -124,7 +124,7 @@ public class dfGUIManagerInspector : Editor
 				else
 				{
 
-					camera.isOrthoGraphic = false;
+					camera.orthographic = false;
 					camera.nearClipPlane = 0.01f;
 					camera.hideFlags = (HideFlags)0x00;
 
@@ -533,7 +533,7 @@ public class dfGUIManagerInspector : Editor
 		var createVerticalGuideRect = new Rect();
 		var createHorizontalGuideRect = new Rect();
 
-		if( SceneView.currentDrawingSceneView.camera.isOrthoGraphic )
+		if( SceneView.currentDrawingSceneView.camera.orthographic )
 		{
 
 			//if( createNewGuide() )
@@ -571,7 +571,7 @@ public class dfGUIManagerInspector : Editor
 					// Ensure that the mouse point is actually contained within the Manager
 					var ray = HandleUtility.GUIPointToWorldRay( evt.mousePosition );
 					RaycastHit hitInfo;
-					if( view.collider.Raycast( ray, out hitInfo, 1000 ) )
+					if( view.GetComponent<Collider>().Raycast( ray, out hitInfo, 1000 ) )
 					{
 
 						displayContextMenu();
@@ -1045,7 +1045,7 @@ public class dfGUIManagerInspector : Editor
 			}
 
 			var scene = SceneView.currentDrawingSceneView ?? SceneView.lastActiveSceneView;
-			var isOrthographic = ( scene != null ) ? scene.camera.isOrthoGraphic : false;
+			var isOrthographic = ( scene != null ) ? scene.camera.orthographic : false;
 			if( isOrthographic )
 			{
 				addContextCreateGuide( menu );

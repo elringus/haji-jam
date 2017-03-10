@@ -691,16 +691,16 @@ public class dfDropdown : dfInteractiveBase, IDFMultiRender
 
 		RaycastHit hitInfo;
 
-		if( triggerButton != null && triggerButton.collider.Raycast( ray, out hitInfo, camera.farClipPlane ) )
+		if( triggerButton != null && triggerButton.GetComponent<Collider>().Raycast( ray, out hitInfo, camera.farClipPlane ) )
 			return;
 
-		if( popup.collider.Raycast( ray, out hitInfo, camera.farClipPlane ) )
+		if( popup.GetComponent<Collider>().Raycast( ray, out hitInfo, camera.farClipPlane ) )
 			return;
 
-		if( popup.Scrollbar != null && popup.Scrollbar.collider.Raycast( ray, out hitInfo, camera.farClipPlane ) )
+		if( popup.Scrollbar != null && popup.Scrollbar.GetComponent<Collider>().Raycast( ray, out hitInfo, camera.farClipPlane ) )
 			return;
 
-		if( this.collider.Raycast ( ray, out hitInfo, camera.farClipPlane ) )
+		if( this.GetComponent<Collider>().Raycast ( ray, out hitInfo, camera.farClipPlane ) )
 		   return;
 
 		ClosePopup();
